@@ -1,0 +1,17 @@
+{
+  "name": "node-aerender",
+  "version": "1.0.0",
+  "description": "Dead simple, promise based aerender wrapper for rendering After Effects projects in NodeJS with progress reporting",
+  "main": "ae.js",
+  "keywords": [
+    "aerender",
+    "adobe",
+    "After Effects",
+    "Adobe After Effects",
+    "video",
+    "render"
+  ],
+  "author": "Steve Lewis",
+  "license": "ISC",
+  "type": "module"
+}
