@@ -1,6 +1,6 @@
 {
   "name": "node-aerender",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Dead simple, promise based aerender wrapper for rendering After Effects projects in NodeJS with progress reporting",
   "main": "ae.js",
   "keywords": [
@@ -13,7 +13,6 @@
   ],
   "author": "Steve Lewis",
   "license": "ISC",
-  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/SteveLewisZA/node-aerender.git"

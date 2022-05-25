@@ -1,7 +1,7 @@
-import { spawn } from "child_process";
-import path from 'path';
+const { spawn } = require("child_process");
+const path = require("path");
 
-export default function (AEPath, config, progress) {
+function render (AEPath, config, progress) {
     return new Promise((resolve, reject) => {
 
         let renderConfig = [];
@@ -71,3 +71,5 @@ export default function (AEPath, config, progress) {
         });
     });
 }
+
+module.exports = render;
