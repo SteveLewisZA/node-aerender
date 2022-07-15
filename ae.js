@@ -1,8 +1,16 @@
-const { spawn } = require("child_process");
+const { spawn, exec } = require("child_process");
 const path = require("path");
+const fs = require("fs");
 
-function render (AEPath, config, progress) {
+function render(AEPath, config, progress) {
     return new Promise((resolve, reject) => {
+
+        let macRender = !!config.mac;
+        delete config.mac;
+        let renderLogFile = config.project + `_${Date.now()}_logs.txt`;
+        if (macRender) {
+            config.log = renderLogFile;
+        }
 
         let renderConfig = [];
         for (const [key, value] of Object.entries(config)) {
@@ -20,8 +28,6 @@ function render (AEPath, config, progress) {
             }
         }
 
-        let ae = spawn(path.join(AEPath, 'aerender'), renderConfig);
-
         const progressRegex = /([\d]{1,2}:[\d]{2}:[\d]{2}:[\d]{2})\s+(\(\d+\))/gi;
         const durationRegex = /Duration:\s+([\d]{1,2}:[\d]{2}:[\d]{2}:[\d]{2})/gi;
         const startRegex = /Start:\s+([\d]{1,2}:[\d]{2}:[\d]{2}:[\d]{2})/gi;
@@ -37,38 +43,87 @@ function render (AEPath, config, progress) {
         let projectStart = null;
         let matchError = null;
 
-        const parseProgress = (data) => {
-            const string = data.toString('utf8').replace(/;/g, ':');
-            const matchStart = isNaN(parseInt(projectStart)) ? startRegex.exec(string) : false;
-            const matchDuration = isNaN(parseInt(projectDuration)) ? durationRegex.exec(string) : false;
-            const matchProgress = !isNaN(parseInt(projectDuration)) ? progressRegex.exec(string) : null;
-            projectDuration = (matchDuration) ? seconds(matchDuration[1]) : projectDuration;
-            projectStart = (matchStart) ? seconds(matchStart[1]) : projectStart;
+        if (macRender) {
 
-            if (progress && matchProgress) {
-                currentProgress = Math.ceil((seconds(matchProgress[1]) - projectStart) * 100 / projectDuration);
-                if (previousProgress !== currentProgress) {
-                    progress(currentProgress);
-                    previousProgress = currentProgress;
+            let watchLog = null;
+
+            exec(`"${path.join(AEPath, 'aerender')}" ${renderConfig.join(' ')}`, (error, stdout, stderr) => {
+                clearInterval(watchLog);
+                resolve({ error, stdout, stderr });
+            });
+
+            const parseProgress = (fullLog) => {
+                let lastLineArr = fullLog.split("\r");
+                let lastLine = lastLineArr[lastLineArr.length - 2];
+
+                if (projectStart == null) {
+                    let matchStart = startRegex.exec(fullLog);
+                    if (matchStart) {
+                        projectStart = seconds(matchStart[1]);
+                    }
+                }
+
+                if (projectDuration == null) {
+                    let matchDuration = durationRegex.exec(fullLog);
+                    if (matchDuration) {
+                        projectDuration = seconds(matchDuration[1]);
+                    }
+                }
+
+                const matchProgress = !isNaN(parseInt(projectDuration)) ? progressRegex.exec(lastLine) : null;
+
+                if (matchProgress) {
+                    currentProgress = Math.ceil((seconds(matchProgress[1]) - projectStart) * 100 / projectDuration);
+                    if (previousProgress !== currentProgress) {
+                        progress(currentProgress);
+                        previousProgress = currentProgress;
+                    }
                 }
             }
 
-            matchError = errorRegex.exec(string);
+            watchLog = setInterval(() => {
+                if (fs.existsSync(renderLogFile)) {
+                    parseProgress(fs.readFileSync(renderLogFile).toString());
+                }
+            }, 1000);
 
-            return data;
-        }
+        } else {
 
-        ae.stdout.on('data', function (data) {
-            parseProgress(data.toString('utf8'));
-        });
+            let ae = spawn(path.join(AEPath, 'aerender'), renderConfig);
 
-        ae.on('close', function (code) {
-            if (matchError !== null) {
-                reject(matchError);
-            } else {
-                resolve();
+            const parseProgress = (data) => {
+                const string = data.toString('utf8').replace(/;/g, ':');
+                const matchStart = isNaN(parseInt(projectStart)) ? startRegex.exec(string) : false;
+                const matchDuration = isNaN(parseInt(projectDuration)) ? durationRegex.exec(string) : false;
+                const matchProgress = !isNaN(parseInt(projectDuration)) ? progressRegex.exec(string) : null;
+                projectDuration = (matchDuration) ? seconds(matchDuration[1]) : projectDuration;
+                projectStart = (matchStart) ? seconds(matchStart[1]) : projectStart;
+
+                if (progress && matchProgress) {
+                    currentProgress = Math.ceil((seconds(matchProgress[1]) - projectStart) * 100 / projectDuration);
+                    if (previousProgress !== currentProgress) {
+                        progress(currentProgress);
+                        previousProgress = currentProgress;
+                    }
+                }
+
+                matchError = errorRegex.exec(string);
+
+                return data;
             }
-        });
+
+            ae.stdout.on('data', function (data) {
+                parseProgress(data.toString('utf8'));
+            });
+
+            ae.on('close', function (code) {
+                if (matchError !== null) {
+                    reject(matchError);
+                } else {
+                    resolve();
+                }
+            });
+        }
     });
 }
 

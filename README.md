@@ -38,9 +38,9 @@ For example:
 ```js
 let config = {
   project: "C:\\Folder\\AEProject.aep",
-  comp: "Testestet",
+  comp: "Comp 1",
   OMtemplate: "Lossless with Alpha",
-  output: "C:\Folder\Render.avi",
+  output: "C:\\Folder\\Render.avi",
   reuse: true,
   s: 30,
   e: 120
@@ -49,4 +49,4 @@ let config = {
 
 This equates to an aerender command as follows:
 
-    aerender -project "C:\Folder\AEProject.aep" -comp "Testestet" -OMtemplate "Lossless with Alpha" -output "C:\Folder\Render.avi" -reuse -s 30 -e 120
+    aerender -project "C:\Folder\AEProject.aep" -comp "Comp 1" -OMtemplate "Lossless with Alpha" -output "C:\Folder\Render.avi" -reuse -s 30 -e 120
