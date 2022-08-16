@@ -5,7 +5,8 @@ const fs = require("fs");
 function render(AEPath, config, progress) {
     return new Promise((resolve, reject) => {
 
-        let macRender = !!config.mac;
+        //let macRender = !!config.mac;
+        let macRender = !!process.platform === "darwin";
         delete config.mac;
         let renderLogFile = config.project + `_${Date.now()}_logs.txt`;
         if (macRender) {

@@ -1,6 +1,6 @@
 {
   "name": "node-aerender",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Dead simple, promise based aerender wrapper for rendering After Effects projects in NodeJS with progress reporting",
   "main": "ae.js",
   "keywords": [
