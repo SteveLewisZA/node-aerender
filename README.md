@@ -4,6 +4,8 @@ Render After Effects projects in NodeJS.
 
 A dead simple, promise based aerender wrapper with progress reporting.
 
+As used in [modeck.io](https://modeck.io/).
+
 ## Installation
 
     npm install node-aerender
