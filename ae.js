@@ -89,7 +89,8 @@ function render(AEPath, config, progress) {
 
         } else {
 
-            let ae = spawn(path.join(AEPath, 'aerender'), renderConfig);
+            const aerenderPath = process.platform === "win32" ? path.join(AEPath, 'aerender.exe') : path.join(AEPath, 'aerender');
+            let ae = spawn(aerenderPath, renderConfig);
 
             const parseProgress = (data) => {
                 const string = data.toString('utf8').replace(/;/g, ':');
